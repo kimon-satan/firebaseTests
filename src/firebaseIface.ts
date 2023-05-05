@@ -1,14 +1,15 @@
 // Import the functions you need from the SDKs you need
 import { FirebaseApp, FirebaseOptions, initializeApp } from "firebase/app";
 import {
+  Firestore,
   getFirestore,
   collection,
   addDoc,
-  doc,
-  getDoc,
   query,
   where,
-  Firestore
+  getDocs,
+  onSnapshot,
+  DocumentSnapshot
 } from "firebase/firestore";
 import { Analytics, getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -26,8 +27,6 @@ const firebaseConfig: FirebaseOptions = {
   appId: import.meta.env.VITE_APP_ID,
   measurementId: import.meta.env.VITE_MEASUREMENT_ID
 };
-
-console.log({ firebaseConfig });
 
 export default class FirebaseIface {
   app: FirebaseApp;
@@ -54,5 +53,20 @@ export default class FirebaseIface {
     }
   }
 
-  async getUsers() {}
+  async getUsers() {
+    const q = query(collection(this.db, "users"), where("first", "==", "Ada"));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs;
+  }
+
+  subscribeUsers(callback: (users: Record<string, any>) => void) {
+    const q = query(collection(this.db, "users"));
+    onSnapshot(q, (querySnapshot: DocumentSnapshot) => {
+      const users: Record<string, any>[] = [];
+      querySnapshot.forEach((doc) => {
+        users.push({ id: doc.id, ...doc.data() });
+      });
+      callback(users);
+    });
+  }
 }
