@@ -9,7 +9,9 @@ import {
   where,
   getDocs,
   onSnapshot,
-  DocumentSnapshot
+  connectFirestoreEmulator,
+  DocumentData,
+  QuerySnapshot
 } from "firebase/firestore";
 import { Analytics, getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -38,6 +40,7 @@ export default class FirebaseIface {
     this.app = initializeApp(firebaseConfig);
     this.analytics = getAnalytics(this.app);
     this.db = getFirestore(this.app);
+    connectFirestoreEmulator(this.db, "localhost", 8080);
   }
 
   async addUser() {
@@ -59,9 +62,9 @@ export default class FirebaseIface {
     return querySnapshot.docs;
   }
 
-  subscribeUsers(callback: (users: Record<string, any>) => void) {
+  subscribeUsers(callback: (users: Record<string, any>[]) => void) {
     const q = query(collection(this.db, "users"));
-    onSnapshot(q, (querySnapshot: DocumentSnapshot) => {
+    onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
       const users: Record<string, any>[] = [];
       querySnapshot.forEach((doc) => {
         users.push({ id: doc.id, ...doc.data() });

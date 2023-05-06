@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import FirebaseIface from "./firebaseIface";
-import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 
 const firebaseIface = new FirebaseIface();
 
