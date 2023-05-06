@@ -13,12 +13,16 @@ import {
   DocumentData,
   QuerySnapshot
 } from "firebase/firestore";
-import { Analytics, getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  User,
+  signOut
+} from "firebase/auth";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+import { Analytics, getAnalytics } from "firebase/analytics";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: import.meta.env.VITE_API_KEY,
@@ -40,15 +44,67 @@ export default class FirebaseIface {
     this.app = initializeApp(firebaseConfig);
     this.analytics = getAnalytics(this.app);
     this.db = getFirestore(this.app);
-    connectFirestoreEmulator(this.db, "localhost", 8080);
+
+    if (import.meta.env.DEV) {
+      // connectFirestoreEmulator(this.db, "localhost", 8080);
+    }
   }
 
-  async addUser() {
+  signup(email: string, password: string) {
+    const auth = getAuth();
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // ..
+      });
+  }
+
+  signin(email: string, password: string) {
+    const auth = getAuth();
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+      });
+  }
+
+  subscribeUser(callback: (user: User | null) => void) {
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      callback(user);
+    });
+  }
+
+  signout() {
+    const auth = getAuth();
+    signOut(auth)
+      .then(() => {
+        // Sign-out successful.
+      })
+      .catch((error) => {
+        // An error happened.
+      });
+  }
+
+  //////////////////// STORIES /////////////////////
+
+  async addStory() {
     try {
-      const docRef = await addDoc(collection(this.db, "users"), {
-        first: "Ada",
-        last: "Lovelace",
-        born: 1815
+      const docRef = await addDoc(collection(this.db, "stories"), {
+        subject: "Journal",
+        body: "Some text about me ...",
+        date: new Date().toISOString()
       });
       console.log("Document written with ID: ", docRef.id);
     } catch (e) {
@@ -56,20 +112,20 @@ export default class FirebaseIface {
     }
   }
 
-  async getUsers() {
-    const q = query(collection(this.db, "users"), where("first", "==", "Ada"));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs;
+  subscribeStories(callback: (stories: Record<string, any>[]) => void) {
+    const q = query(collection(this.db, "stories"));
+    onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
+      const stories: Record<string, any>[] = [];
+      querySnapshot.forEach((doc) => {
+        stories.push({ id: doc.id, ...doc.data() });
+      });
+      callback(stories);
+    });
   }
 
-  subscribeUsers(callback: (users: Record<string, any>[]) => void) {
-    const q = query(collection(this.db, "users"));
-    onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
-      const users: Record<string, any>[] = [];
-      querySnapshot.forEach((doc) => {
-        users.push({ id: doc.id, ...doc.data() });
-      });
-      callback(users);
-    });
+  async getStories() {
+    const q = query(collection(this.db, "stories"));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs;
   }
 }
