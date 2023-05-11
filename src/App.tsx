@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import "./App.css";
 import FirebaseIface from "./firebaseIface";
 import { User } from "firebase/auth";
-import { SignUp } from "./Signup";
 import { Stories } from "./Stories";
-import { SignIn } from "./Signin";
+import { Login } from "./Login";
+import "./App.css";
 
 const firebaseIface = new FirebaseIface();
 
@@ -25,10 +24,7 @@ function App() {
       <Stories firebaseIface={firebaseIface} />
     </>
   ) : (
-    <>
-      <SignUp firebaseIface={firebaseIface} />
-      <SignIn firebaseIface={firebaseIface} />
-    </>
+    <Login firebaseIface={firebaseIface} />
   );
 }
 

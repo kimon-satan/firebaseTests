@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import FirebaseIface from "./firebaseIface";
 import "./Stories.css";
 

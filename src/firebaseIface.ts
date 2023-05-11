@@ -1,25 +1,27 @@
-// Import the functions you need from the SDKs you need
 import { FirebaseApp, FirebaseOptions, initializeApp } from "firebase/app";
+
 import {
   Firestore,
   getFirestore,
   collection,
   addDoc,
   query,
-  where,
   getDocs,
   onSnapshot,
   connectFirestoreEmulator,
   DocumentData,
   QuerySnapshot
 } from "firebase/firestore";
+
 import {
   getAuth,
+  connectAuthEmulator,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   onAuthStateChanged,
   User,
-  signOut
+  signOut,
+  Auth
 } from "firebase/auth";
 
 import { Analytics, getAnalytics } from "firebase/analytics";
@@ -38,62 +40,59 @@ export default class FirebaseIface {
   app: FirebaseApp;
   analytics: Analytics;
   db: Firestore;
+  auth: Auth;
 
   constructor() {
     // Initialize Firebase
     this.app = initializeApp(firebaseConfig);
     this.analytics = getAnalytics(this.app);
     this.db = getFirestore(this.app);
+    this.auth = getAuth();
 
     if (import.meta.env.DEV) {
-      // connectFirestoreEmulator(this.db, "localhost", 8080);
+      connectFirestoreEmulator(this.db, "localhost", 8080);
+      connectAuthEmulator(this.auth, "http://localhost:9099");
     }
   }
 
   signup(email: string, password: string) {
-    const auth = getAuth();
-    createUserWithEmailAndPassword(auth, email, password)
+    createUserWithEmailAndPassword(this.auth, email, password)
       .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
-        // ...
+        console.log(user);
       })
       .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        // ..
+        alert(error.message);
       });
   }
 
   signin(email: string, password: string) {
-    const auth = getAuth();
-    signInWithEmailAndPassword(auth, email, password)
+    signInWithEmailAndPassword(this.auth, email, password)
       .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
-        // ...
+        console.log(user);
       })
       .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
+        alert(error.message);
       });
   }
 
   subscribeUser(callback: (user: User | null) => void) {
-    const auth = getAuth();
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(this.auth, (user) => {
       callback(user);
     });
   }
 
   signout() {
-    const auth = getAuth();
-    signOut(auth)
+    signOut(this.auth)
       .then(() => {
         // Sign-out successful.
       })
       .catch((error) => {
         // An error happened.
+        alert(error.message);
       });
   }
 

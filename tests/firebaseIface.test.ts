@@ -8,10 +8,12 @@ vi.mock("firebase/analytics", () => ({
 describe("firebaseStoreTest", () => {
   const firebaseIface = new FirebaseIface();
 
-  it("gets the users", async () => {
-    await firebaseIface.addUser();
-    const users = await firebaseIface.getUsers();
-    console.log({ users });
-    expect(users).toBeDefined();
+  it("adds a story", async () => {
+    await expect(firebaseIface.addStory()).resolves.not.toThrowError();
+  });
+
+  it("gets stories", async () => {
+    const stories = await firebaseIface.getStories();
+    expect(stories).toBeDefined();
   });
 });
